@@ -91,15 +91,21 @@ void update_frame(void)
     if (is_cheating(t))
     {
         cheated = !cheated;
+        st = GetTime();
     }
 
     BeginDrawing();
     ClearBackground(MIDNIGHT);
 
-    if (scale_factor < 1)
+    if (!cheated && scale_factor < 1)
     {
         float elapsed = Clamp((t - st) / EASE_OUT_DURATION, 0, 1);
         scale_factor = log(1 + (K * elapsed)) / log(1 + K);
+    }
+    else if (cheated && scale_factor > 0)
+    {
+        float elapsed = Clamp((t - st) / EASE_OUT_DURATION, 0, 1);
+        scale_factor = 1 - log(1 + (K * elapsed)) / log(1 + K);
     }
 
     for (int w = 0; w < WAVE_COUNT; w++)
