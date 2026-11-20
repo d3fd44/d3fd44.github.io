@@ -1,0 +1,33 @@
+ColumnLimit: 140
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+IndentCaseLabels: true
+BreakBeforeBraces: Custom
+AlignEscapedNewlinesLeft: false
+AlignConsecutiveDeclarations: true
+AlignTrailingComments: true
+SpacesBeforeTrailingComments: 2
+PenaltyReturnTypeOnItsOwnLine: 200
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackParameters: true
+BreakBeforeBinaryOperators: true
+BreakBeforeTernaryOperators: true
+ContinuationIndentWidth: 2
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: No
+AlignEscapedNewlines: Left
+BinPackArguments: true
+BraceWrapping:
+  AfterControlStatement: true
+  AfterEnum:       false
+  AfterFunction:   true
+  AfterStruct:     false
+  AfterUnion:      true
+  BeforeElse:      true
+  IndentBraces:    false
+PointerAlignment: Right
+SortIncludes: true
+AlignConsecutiveMacros: AcrossEmptyLines
+SpaceBeforeParens: ControlStatementsExceptControlMacros
