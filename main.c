@@ -49,14 +49,14 @@ void update_frame(void)
             waves[w].points[i].x = (((double)i / (SAMPLES - 1)) * screen_width);
             waves[w].points[i].y = sea_level - (amplitudes[w] * sin(initial_phase - angular_velocity * t + phase_offsets[w]));
         }
-        DrawLineStrip(waves[w].points, SAMPLES, wave_colors[w]);
+        DrawSplineLinear(waves[w].points, SAMPLES, 2.5, wave_colors[w]);
     }
     EndDrawing();
 }
 
 int main(void)
 {
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT);
 
     InitWindow(800, 600, "");
     SetWindowMinSize(600, 400);
