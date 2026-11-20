@@ -1,3 +1,4 @@
 build
+web/public/wasm
 compile_commands.json
 *ignorethis*
