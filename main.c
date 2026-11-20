@@ -51,7 +51,9 @@ bool cheated = false;
 bool is_cheating(double t)
 {
     KeyboardKey key = GetKeyPressed();
-    bool        time_out = cheating_progress > 0 && t - last_keypress > 2;
+
+    if (cheating_progress > 0 && t - last_keypress > 2)
+        cheating_progress = 0;
 
     while (key != 0)
     {
@@ -71,9 +73,6 @@ bool is_cheating(double t)
             cheating_progress = key == konami_code[0] ? 1 : 0;
             last_keypress = t;
         }
-
-        if (time_out)
-            cheating_progress = 0;
 
         key = GetKeyPressed();
     }
