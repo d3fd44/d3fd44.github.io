@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include <math.h>
+#include <stdbool.h>
 
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -38,6 +39,47 @@ Color wave_colors[WAVE_COUNT] = {
     { 23, 40, 61, 220 }     // Navy
 };
 
+KeyboardKey konami_code[] = { KEY_UP, KEY_UP, KEY_DOWN, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_LEFT, KEY_RIGHT, KEY_B, KEY_A };
+double      last_keypress = 0;
+int         cheating_progress = 0;
+
+#define CHEAT_TIMEOUT   2.0
+#define KONAMI_CODE_LEN (sizeof konami_code / sizeof konami_code[0])
+
+bool cheated = false;
+
+bool is_cheating(double t)
+{
+    KeyboardKey key = GetKeyPressed();
+    bool        time_out = cheating_progress > 0 && t - last_keypress > 2;
+
+    while (key != 0)
+    {
+        if (key == konami_code[cheating_progress])
+        {
+            cheating_progress++;
+            last_keypress = t;
+
+            if (cheating_progress == KONAMI_CODE_LEN)
+            {
+                cheating_progress = 0;
+                return true;
+            }
+        }
+        else
+        {
+            cheating_progress = key == konami_code[0] ? 1 : 0;
+            last_keypress = t;
+        }
+
+        if (time_out)
+            cheating_progress = 0;
+
+        key = GetKeyPressed();
+    }
+    return false;
+}
+
 void update_frame(void)
 {
     float t = GetTime();
@@ -46,6 +88,11 @@ void update_frame(void)
     int screen_height = GetScreenHeight();
 
     float sea_level = (double)screen_height / 2;  // you need to join the dark side to control physics laws
+
+    if (is_cheating(t))
+    {
+        cheated = !cheated;
+    }
 
     BeginDrawing();
     ClearBackground(MIDNIGHT);
