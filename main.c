@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "raymath.h"
 #include <math.h>
 
 #if defined(PLATFORM_WEB)
@@ -19,6 +20,15 @@ float frequencies[WAVE_COUNT] = { 1.3f, 2.1f, 1.7f, 2.6f, 1.1f };
 float amplitudes[WAVE_COUNT] = { 42, 18, 70, 46, 62 };
 float phase_offsets[WAVE_COUNT] = { 0.4f, 1.8f, 3.6f, 5.0f, 2.2f };
 
+float scale_factor = 0;
+
+#define SCALABLE_AMPLITUDE(A) ((A) * scale_factor)
+#define EASE_OUT_DURATION     2
+#define EASE_OUT_STRENGHT     250
+#define K                     EASE_OUT_STRENGHT
+
+double st;
+
 Color MIDNIGHT = { 11, 18, 32, 255 };
 Color wave_colors[WAVE_COUNT] = {
     { 23, 40, 61, 200 },    // Navy
@@ -35,19 +45,27 @@ void update_frame(void)
     int screen_width = GetScreenWidth();
     int screen_height = GetScreenHeight();
 
+    float sea_level = (double)screen_height / 2;  // you need to join the dark side to control physics laws
+
     BeginDrawing();
     ClearBackground(MIDNIGHT);
+
+    if (scale_factor < 1)
+    {
+        float elapsed = Clamp((t - st) / EASE_OUT_DURATION, 0, 1);
+        scale_factor = log(1 + (K * elapsed)) / log(1 + K);
+    }
 
     for (int w = 0; w < WAVE_COUNT; w++)
     {
         for (int i = 0; i < SAMPLES; i++)
         {
-            float sea_level = (double)screen_height / 2;  // you need to join the dark side to control physics laws
             float initial_phase = 2 * PI * ((double)i / (SAMPLES - 1)) * frequencies[w];
             float angular_velocity = 2 * PI / periods[w];
 
             waves[w].points[i].x = (((double)i / (SAMPLES - 1)) * screen_width);
-            waves[w].points[i].y = sea_level - (amplitudes[w] * sin(initial_phase - angular_velocity * t + phase_offsets[w]));
+            waves[w].points[i].y
+              = sea_level - (SCALABLE_AMPLITUDE(amplitudes[w]) * sin(initial_phase - angular_velocity * t + phase_offsets[w]));
         }
         DrawSplineLinear(waves[w].points, SAMPLES, 2.5, wave_colors[w]);
     }
@@ -60,6 +78,8 @@ int main(void)
 
     InitWindow(800, 600, "");
     SetWindowMinSize(600, 400);
+
+    st = GetTime();
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(update_frame, 0, 1);
