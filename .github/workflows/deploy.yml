@@ -1,0 +1,101 @@
+name: Deploy portfolio
+
+on:
+  push:
+    branches: [main]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout portfolio
+        uses: actions/checkout@v7
+
+      - name: Checkout raylib
+        uses: actions/checkout@v7
+        with:
+          repository: raysan5/raylib
+          ref: 6.2
+          path: raylib-src
+
+      - name: Setup Emscripten
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: tot
+          update: true
+
+      - name: Verify Emscripten
+        run: emcc -v
+
+      - name: Build raylib for Web
+        run: make PLATFORM=PLATFORM_WEB
+        working-directory: raylib-src/src
+
+      - name: Build portfolio WASM
+        run: |
+          make wasm \
+            WEB_INCLUDE="-I${GITHUB_WORKSPACE}/raylib-src/src" \
+            WEB_LIB="${GITHUB_WORKSPACE}/raylib-src/src/libraylib.web.a"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: web
+
+      - name: Build React application
+        run: npm run build
+        working-directory: web
+
+      - name: Verify build output
+        run: |
+          test -s web/dist/index.html
+          test -s web/dist/wasm/bg.js
+          test -s web/dist/wasm/bg.wasm
+          find web/dist -maxdepth 3 -type f -print
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload build artifact
+        id: upload
+        uses: actions/upload-pages-artifact@v5
+        with:
+          name: github-pages
+          path: web/dist
+          retention-days: 1
+
+      - name: Verify artifact upload
+        run: echo "Uploaded artifact ID ${{ steps.upload.outputs.artifact_id }}"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5
+        with:
+          artifact_name: github-pages
