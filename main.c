@@ -10,13 +10,17 @@
 #define WAVE_COUNT 5
 #define SAMPLES    1024
 
+#define EXPAND     1
+#define COLLAPSE   2
+#define IDLE       3
+
 typedef struct {
     Vector2 points[SAMPLES];
 } wave;
 
 wave waves[WAVE_COUNT] = { 0 };
 
-float periods[WAVE_COUNT] = { -140, 95, -110, 160, -75 };  // negative values for negative rotation, not "negative period" actually
+float periods[WAVE_COUNT] = { -140, 45, -10, 160, -75 };  // negative values for negative rotation, not "negative period" actually
 float frequencies[WAVE_COUNT] = { 1.3f, 2.1f, 1.7f, 2.6f, 1.1f };
 float amplitudes[WAVE_COUNT] = { 42, 18, 70, 46, 62 };
 float phase_offsets[WAVE_COUNT] = { 0.4f, 1.8f, 3.6f, 5.0f, 2.2f };
@@ -27,6 +31,9 @@ float scale_factor = 0;
 #define EASE_OUT_DURATION     2
 #define EASE_OUT_STRENGTH     250
 #define K                     EASE_OUT_STRENGTH
+
+int  direction = EXPAND;
+bool show_combined = false;
 
 double st;
 
@@ -45,8 +52,6 @@ int         cheating_progress = 0;
 
 #define CHEAT_TIMEOUT   2.0
 #define KONAMI_CODE_LEN (sizeof konami_code / sizeof konami_code[0])
-
-bool cheated = false;
 
 bool is_cheating(double t)
 {
@@ -81,31 +86,43 @@ bool is_cheating(double t)
 
 void update_frame(void)
 {
-    float t = GetTime();
+    double t = GetTime();
 
     int screen_width = GetScreenWidth();
     int screen_height = GetScreenHeight();
 
+    Vector2 combined_wave[SAMPLES] = { 0 };
+
     float sea_level = (double)screen_height / 2;  // you need to join the dark side to control physics laws
 
-    if (is_cheating(t))
+    if (is_cheating(t) && direction == IDLE)
     {
-        cheated = !cheated;
-        st = GetTime();
+        direction = COLLAPSE;
+        st = t;
     }
 
     BeginDrawing();
     ClearBackground(MIDNIGHT);
 
-    if (!cheated && scale_factor < 1)
+    if (direction == EXPAND)
     {
         float elapsed = Clamp((t - st) / EASE_OUT_DURATION, 0, 1);
         scale_factor = log(1 + (K * elapsed)) / log(1 + K);
+
+        if (elapsed >= 1)
+            direction = IDLE;
     }
-    else if (cheated && scale_factor > 0)
+    else if (direction == COLLAPSE)
     {
-        float elapsed = Clamp((t - st) / EASE_OUT_DURATION, 0, 1);
+        float elapsed = Clamp((t - st) / EASE_OUT_DURATION * 4, 0, 1);  // collapses 4 times faster
         scale_factor = 1 - log(1 + (K * elapsed)) / log(1 + K);
+
+        if (elapsed >= 1)
+        {
+            show_combined = !show_combined;
+            direction = EXPAND;
+            st = t;
+        }
     }
 
     for (int w = 0; w < WAVE_COUNT; w++)
@@ -115,12 +132,28 @@ void update_frame(void)
             float initial_phase = 2 * PI * ((double)i / (SAMPLES - 1)) * frequencies[w];
             float angular_velocity = 2 * PI / periods[w];
 
-            waves[w].points[i].x = (((double)i / (SAMPLES - 1)) * screen_width);
-            waves[w].points[i].y
-              = sea_level - (SCALABLE_AMPLITUDE(amplitudes[w]) * sin(initial_phase - angular_velocity * t + phase_offsets[w]));
+            double vertical_displacement = SCALABLE_AMPLITUDE(amplitudes[w]) * sin(initial_phase - angular_velocity * t + phase_offsets[w]);
+            double horizontal_displacement = ((double)i / (SAMPLES - 1)) * screen_width;
+
+            waves[w].points[i].x = horizontal_displacement;
+            waves[w].points[i].y = sea_level - vertical_displacement;
+
+            combined_wave[i].y -= vertical_displacement;
+
+            if (w > 0)
+                continue;
+            else
+            {
+                combined_wave[i].x = horizontal_displacement;
+                combined_wave[i].y += sea_level;
+            }
         }
-        DrawSplineLinear(waves[w].points, SAMPLES, 2.5, wave_colors[w]);
+        if (!show_combined)
+            DrawSplineLinear(waves[w].points, SAMPLES, 2.5, wave_colors[w]);
     }
+    if (show_combined)
+        DrawSplineLinear(combined_wave, SAMPLES, 4.5, RED);
+
     EndDrawing();
 }
 
