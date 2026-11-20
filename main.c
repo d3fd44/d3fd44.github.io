@@ -25,8 +25,8 @@ float scale_factor = 0;
 
 #define SCALABLE_AMPLITUDE(A) ((A) * scale_factor)
 #define EASE_OUT_DURATION     2
-#define EASE_OUT_STRENGHT     250
-#define K                     EASE_OUT_STRENGHT
+#define EASE_OUT_STRENGTH     250
+#define K                     EASE_OUT_STRENGTH
 
 double st;
 
