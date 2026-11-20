@@ -31,3 +31,5 @@ PointerAlignment: Right
 SortIncludes: true
 AlignConsecutiveMacros: AcrossEmptyLines
 SpaceBeforeParens: ControlStatementsExceptControlMacros
+Cpp11BracedListStyle: false
+
