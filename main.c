@@ -27,6 +27,9 @@ float phase_offsets[WAVE_COUNT] = { 0.4f, 1.8f, 3.6f, 5.0f, 2.2f };
 
 float scale_factor = 0;
 
+#define REF_WIDTH             1920.0
+#define DAMP_VIEWPORT         Clamp(GetScreenWidth() / REF_WIDTH, 0.35, 1)
+
 #define SCALABLE_AMPLITUDE(A) ((A) * scale_factor)
 #define EASE_OUT_DURATION     2
 #define EASE_OUT_STRENGTH     250
@@ -132,7 +135,8 @@ void update_frame(void)
             float initial_phase = 2 * PI * ((double)i / (SAMPLES - 1)) * frequencies[w];
             float angular_velocity = 2 * PI / periods[w];
 
-            double vertical_displacement = SCALABLE_AMPLITUDE(amplitudes[w]) * sin(initial_phase - angular_velocity * t + phase_offsets[w]);
+            double vertical_displacement
+              = SCALABLE_AMPLITUDE(amplitudes[w]) * sin(initial_phase - angular_velocity * t + phase_offsets[w]) * DAMP_VIEWPORT;
             double horizontal_displacement = ((double)i / (SAMPLES - 1)) * screen_width;
 
             waves[w].points[i].x = horizontal_displacement;
