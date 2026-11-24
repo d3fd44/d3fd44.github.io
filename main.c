@@ -7,7 +7,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#define WAVE_COUNT 5
+#define WAVE_COUNT 6
 #define SAMPLES    1024
 
 #define EXPAND     1
@@ -20,10 +20,10 @@ typedef struct {
 
 wave waves[WAVE_COUNT] = { 0 };
 
-float periods[WAVE_COUNT] = { -140, 45, -10, 160, -75 };  // negative values for negative rotation, not "negative period" actually
-float frequencies[WAVE_COUNT] = { 1.3f, 2.1f, 1.7f, 2.6f, 1.1f };
-float amplitudes[WAVE_COUNT] = { 42, 18, 70, 46, 62 };
-float phase_offsets[WAVE_COUNT] = { 0.4f, 1.8f, 3.6f, 5.0f, 2.2f };
+float periods[WAVE_COUNT] = { -170, 65, -10, 160, -75, 18 };  // negative values for negative rotation
+float frequencies[WAVE_COUNT] = { 0.9f, 2.0f, 0.7f, 2.6f, 1.1f, 3.1f };
+float amplitudes[WAVE_COUNT] = { 60, 20, 50, 34, 56, 12 };
+float phase_offsets[WAVE_COUNT] = { 0.3f, 1.1f, 1.9f, 3.0f, 4.2f, 5.3f };
 
 float scale_factor = 0;
 
@@ -42,11 +42,12 @@ double st;
 
 Color MIDNIGHT = { 11, 18, 32, 255 };
 Color wave_colors[WAVE_COUNT] = {
-    { 23, 40, 61, 200 },    // Navy
-    { 66, 205, 224, 120 },  // Cyan
+    { 23, 40, 61, 170 },    // Navy
+    { 66, 205, 224, 90 },   // Cyan
     { 66, 205, 224, 160 },  // Cyan
-    { 255, 152, 92, 130 },  // Orange
-    { 23, 40, 61, 220 }     // Navy
+    { 255, 152, 92, 80 },   // Orange
+    { 23, 40, 61, 215 },    // Navy
+    { 170, 235, 240, 65 },  // Pale Cyan
 };
 
 KeyboardKey konami_code[] = { KEY_UP, KEY_UP, KEY_DOWN, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_LEFT, KEY_RIGHT, KEY_B, KEY_A };
