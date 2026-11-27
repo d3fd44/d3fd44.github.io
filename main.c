@@ -16,7 +16,7 @@
 float scale_factor = 0;
 
 #define REF_WIDTH             1920.0
-#define WIDTH_THRESHOLD       0.5
+#define WIDTH_THRESHOLD       0.8
 #define SPACING               (REF_WIDTH / 1023)  // distance between two points in pixels (1024 points)
 #define MAX_SAMPLES           4096
 
