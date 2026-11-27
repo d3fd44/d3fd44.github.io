@@ -138,7 +138,8 @@ void update_frame(void)
         float angular_velocity = 2 * PI / periods[w];
 
         float  amplitude = SCALABLE_AMPLITUDE(amplitudes[w]) * response_factor;
-        float  phase_per_px = 2 * PI * frequencies[w] / wave_spread;
+        float  phase_per_px = 2 * PI * frequencies[w] / wave_spread
+                              / Clamp(screen_width / wave_spread, 0.5, 1);  // higher frequency for smaller width screens
         double time_phase = phase_offsets[w] - angular_velocity * t;
 
         for (int i = 0; i < n; i++)
