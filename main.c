@@ -21,14 +21,14 @@ typedef struct {
 wave waves[WAVE_COUNT] = { 0 };
 
 float periods[WAVE_COUNT] = { -170, 65, -10, 160, -75, 18 };  // negative values for negative rotation
-float frequencies[WAVE_COUNT] = { 0.9f, 2.0f, 0.7f, 2.6f, 1.1f, 3.1f };
+float frequencies[WAVE_COUNT] = { 0.9f, 2.0f, 0.7f, 0.6f, 1.1f, 3.1f };
 float amplitudes[WAVE_COUNT] = { 60, 20, 50, 34, 56, 12 };
 float phase_offsets[WAVE_COUNT] = { 0.3f, 1.1f, 1.9f, 3.0f, 4.2f, 5.3f };
 
 float scale_factor = 0;
 
 #define REF_WIDTH             1920.0
-#define DAMP_VIEWPORT         Clamp(GetScreenWidth() / REF_WIDTH, 0.35, 1)
+#define DAMP_VIEWPORT(W)      Clamp((W) / REF_WIDTH, 0.35, 1)
 
 #define SCALABLE_AMPLITUDE(A) ((A) * scale_factor)
 #define EASE_OUT_DURATION     2
@@ -136,8 +136,8 @@ void update_frame(void)
             float initial_phase = 2 * PI * ((double)i / (SAMPLES - 1)) * frequencies[w];
             float angular_velocity = 2 * PI / periods[w];
 
-            double vertical_displacement
-              = SCALABLE_AMPLITUDE(amplitudes[w]) * sin(initial_phase - angular_velocity * t + phase_offsets[w]) * DAMP_VIEWPORT;
+            double vertical_displacement = SCALABLE_AMPLITUDE(amplitudes[w]) * sin(initial_phase - angular_velocity * t + phase_offsets[w])
+                                           * DAMP_VIEWPORT(screen_width);
             double horizontal_displacement = ((double)i / (SAMPLES - 1)) * screen_width;
 
             waves[w].points[i].x = horizontal_displacement;
@@ -145,19 +145,17 @@ void update_frame(void)
 
             combined_wave[i].y -= vertical_displacement;
 
-            if (w > 0)
-                continue;
-            else
+            if (w == 0)
             {
                 combined_wave[i].x = horizontal_displacement;
                 combined_wave[i].y += sea_level;
             }
         }
         if (!show_combined)
-            DrawSplineLinear(waves[w].points, SAMPLES, 2.5, wave_colors[w]);
+            DrawSplineLinear(waves[w].points, SAMPLES, 4 * DAMP_VIEWPORT(screen_width), wave_colors[w]);
     }
     if (show_combined)
-        DrawSplineLinear(combined_wave, SAMPLES, 4.5, RED);
+        DrawSplineLinear(combined_wave, SAMPLES, 6 * DAMP_VIEWPORT(screen_width), RED);
 
     EndDrawing();
 }
